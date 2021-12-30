@@ -72,6 +72,9 @@ songplay_table_create = ("""
         location TEXT,
         user_agent TEXT
     )
+    DISTSTYLE KEY
+    DISTKEY (start_time)
+    SORTKEY (start_time);
 """)
 
 user_table_create = ("""
@@ -82,6 +85,7 @@ user_table_create = ("""
         gender CHAR(1),
         level VARCHAR
     )
+    SORTKEY (user_id);
 """)
 
 song_table_create = ("""
@@ -92,6 +96,7 @@ song_table_create = ("""
         year INT,
         duration FLOAT
     )
+    SORTKEY (song_id);
 """)
 
 artist_table_create = ("""
@@ -102,6 +107,7 @@ artist_table_create = ("""
         latitude FLOAT ,
         longitude FLOAT
     )
+    SORTKEY (artist_id);
 """)
 
 time_table_create = ("""
@@ -114,17 +120,20 @@ time_table_create = ("""
         year INT,
         weekday VARCHAR
     )
+    DISTSTYLE KEY
+    DISTKEY (start_time)
+    SORTKEY (start_time);
 """)
 
 # STAGING TABLES
 
-staging_events_copy = ("""copy staging_events 
+staging_events_copy = ("""copy staging_events
                           from {}
                           iam_role {}
                           json {}
                        """).format(LOG_DATA, IAM_ROLE, LOG_JSONPATH)
 
-staging_songs_copy = ("""copy staging_songs 
+staging_songs_copy = ("""copy staging_songs
                           from {}
                           iam_role {}
                           json 'auto'
@@ -134,13 +143,13 @@ staging_songs_copy = ("""copy staging_songs
 
 songplay_table_insert = ("""
     INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
-    SELECT DISTINCT 
-        timestamp with time zone 'epoch' + se.ts/1000 * interval '1 second', se.userId, se.level, 
+    SELECT DISTINCT
+        timestamp with time zone 'epoch' + se.ts/1000 * interval '1 second', se.userId, se.level,
         ss.song_id, ss.artist_id, se.sessionId, se.location, se.userAgent
     FROM staging_events AS se INNER JOIN staging_songs AS ss
     ON se.song = ss.title AND se.artist = ss.artist_name AND se.length = ss.duration
     WHERE se.page = 'NextSong'
-    
+
 """)
 
 user_table_insert = ("""
@@ -166,12 +175,12 @@ artist_table_insert = ("""
 
 time_table_insert = ("""
     INSERT INTO time (start_time, hour, day, week, month, year, weekday)
-    SELECT start_time, 
-           extract(hour from start_time), 
-           extract(day from start_time), 
-           extract(week from start_time), 
-           extract(month from start_time), 
-           extract(year from start_time), 
+    SELECT start_time,
+           extract(hour from start_time),
+           extract(day from start_time),
+           extract(week from start_time),
+           extract(month from start_time),
+           extract(year from start_time),
            extract(weekday from start_time)
     FROM songplays
 """)
