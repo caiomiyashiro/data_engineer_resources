@@ -2,12 +2,17 @@
 
 This project builds an **ELT pipeline** that extracts data from **S3**, stages them in **Redshift**, and transforms data into a set of **dimensional tables** for Sparkify analytics team to continue finding insights in what songs their users are listening to.
 
+## Creating the Redash Cluster at AWS:
+1. Create Cluster
+2. Click available to all sources
+3. Associate network security group
+4. Associate IAM role to grant access to S3
 
 ## Project Structure
 
 ```
 Cloud Data Warehouse
-|____create_tables.py    # database/table creation script 
+|____create_tables.py    # database/table creation script
 |____etl.py              # ELT builder
 |____sql_queries.py      # SQL query collections
 |____dwh.cfg             # AWS configuration file

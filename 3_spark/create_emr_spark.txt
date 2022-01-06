@@ -1,0 +1,15 @@
+aws ec2 create-key-pair --key-name TestCli
+
+aws emr create-cluster --name caio-spark-cli \
+ --use-default-roles --release-label emr-5.30.0  \
+--instance-count 3 --applications Name=Spark Name=Zeppelin  \
+--ec2-attributes KeyName=caio_spark,SubnetId=subnet-047924aefe5d19a15 \
+--instance-type m5.xlarge --log-uri s3://emrlogs/
+
+ec2 - allow ssh inbound
+
+chmod 400 caio_spark-spark.pem
+
+ssh -i caio_spark.pem hadoop@ec2-35-88-0-9.us-west-2.compute.amazonaws.com
+
+scp lower.py hadoop@ec2-35-88-0-9.us-west-2.compute.amazonaws.com:/home/hadoop
